@@ -1,0 +1,10 @@
+package com.mstar.freightoptimizer.model;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Entity
+@Table(name = "route_stops")
+@Data
+public class RouteStopEntity {
+}

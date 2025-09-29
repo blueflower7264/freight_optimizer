@@ -5,7 +5,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/freightdb
     username: postgres
     password: root
-    driver-class-name: org.postgresql.Driver
+#    driver-class-name: org.postgresql.Driver
 
     jpa:
       hibernate:
