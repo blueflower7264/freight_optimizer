@@ -18,17 +18,6 @@ public class OptimizationServiceImpl implements OptimizationService {
     private final OrToolsSolver solver = new OrToolsSolver();
 
     @Override
-    public void createOrder() {
-        OrderEntity order = new OrderEntity();
-        order.setDemand(15);
-        order.setLatitude(40.7128);
-        order.setLongitude(-74.0060);
-        order.setStartTime("09:00");
-        order.setEndTime("12:00");
-        orderRepository.save(order);
-    }
-
-    @Override
     public List<RouteSolution> optimizeEntities(List<OrderEntity> orders, List<VehicleEntity> vehicles) {
         // Convert entities to a lightweight DTO if needed
         return solver.solveVRP(

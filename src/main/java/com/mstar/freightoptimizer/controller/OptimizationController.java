@@ -1,5 +1,6 @@
 package com.mstar.freightoptimizer.controller;
 
+import com.mstar.freightoptimizer.dto.OptimizeRequest;
 import com.mstar.freightoptimizer.model.*;
 import com.mstar.freightoptimizer.repository.OrderRepository;
 import com.mstar.freightoptimizer.repository.RouteRepository;
@@ -37,17 +38,14 @@ public class OptimizationController {
     }
 
     @PostMapping("/optimize")
-    public List<RouteSolution> optimize(@RequestBody Map<String, List<?>> request) {
-        // Deserialize raw input into entities
-        List<OrderEntity> orders = (List<OrderEntity>) request.get("orders");
-        List<VehicleEntity> vehicles = (List<VehicleEntity>) request.get("vehicles");
+    public List<RouteSolution> optimize(@RequestBody OptimizeRequest request) {
 
         // Persist to database
-        orderRepository.saveAll(orders);
-        vehicleRepository.saveAll(vehicles);
+        orderRepository.saveAll(request.getOrders());
+        vehicleRepository.saveAll(request.getVehicles());
 
         // Run solver (stubbed for now)
-        List<RouteSolution> solutions = optimizationService.optimizeEntities(orders, vehicles);
+        List<RouteSolution> solutions = optimizationService.optimizeEntities(request.getOrders(), request.getVehicles());
 
         // Save solutions into DB
         for (RouteSolution sol : solutions) {
