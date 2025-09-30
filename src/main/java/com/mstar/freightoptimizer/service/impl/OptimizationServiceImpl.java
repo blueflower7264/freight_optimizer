@@ -45,7 +45,7 @@ public class OptimizationServiceImpl implements OptimizationService {
                 .map(VehicleEntity::getId)
                 .collect(Collectors.toList());
 
-        // Build coordinates list in [lon,lat]
+        // Build coordinates list in [lat, lon]
         List<double[]> coordinates = new ArrayList<>();
         coordinates.add(new double[]{depot.getLatitude(), depot.getLongitude()}); // depot
         savedOrders.forEach(o ->

@@ -27,7 +27,9 @@ public class DistanceMatrixServiceImpl implements DistanceMatrixService {
         StringBuilder coords = new StringBuilder();
         for (double[] loc : coordinates) {
             if (!coords.isEmpty()) coords.append(";");
-            coords.append(loc[1]).append(",").append(loc[0]); // lon,lat
+            String lon = df.format(loc[1]);
+            String lan = df.format(loc[0]);
+            coords.append(lon).append(",").append(lan); // lon,lat
         }
 
         String url = "http://localhost:5000/table/v1/driving/" + coords;
