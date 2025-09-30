@@ -2,69 +2,57 @@ package com.mstar.freightoptimizer.controller;
 
 import com.mstar.freightoptimizer.dto.OptimizeRequest;
 import com.mstar.freightoptimizer.model.*;
-import com.mstar.freightoptimizer.repository.OrderRepository;
-import com.mstar.freightoptimizer.repository.RouteRepository;
-import com.mstar.freightoptimizer.repository.RouteStopRepository;
-import com.mstar.freightoptimizer.repository.VehicleRepository;
 import com.mstar.freightoptimizer.service.OptimizationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class OptimizationController {
 
     private final OptimizationService optimizationService;
-    private final OrderRepository orderRepository;
-    private final VehicleRepository vehicleRepository;
-    private final RouteRepository routeRepository;
-    private final RouteStopRepository routeStopRepository;
 
-    public OptimizationController(OptimizationService optimizationService,
-                                  OrderRepository orderRepository,
-                                  VehicleRepository vehicleRepository,
-                                  RouteRepository routeRepository,
-                                  RouteStopRepository routeStopRepository) {
+    @Autowired
+    public OptimizationController(OptimizationService optimizationService) {
         this.optimizationService = optimizationService;
-        this.orderRepository = orderRepository;
-        this.vehicleRepository = vehicleRepository;
-        this.routeRepository = routeRepository;
-        this.routeStopRepository = routeStopRepository;
     }
 
     @PostMapping("/optimize")
     public List<RouteSolution> optimize(@RequestBody OptimizeRequest request) {
+        // ✅ Map OrderDto → OrderEntity
+        List<OrderEntity> orderEntities = request.getOrders().stream()
+                .map(dto -> {
+                    OrderEntity o = new OrderEntity();
+                    o.setDemand(dto.getDemand());
+                    o.setLatitude(dto.getLatitude());
+                    o.setLongitude(dto.getLongitude());
+                    o.setStartTime(dto.getStartTime());
+                    o.setEndTime(dto.getEndTime());
+                    return o;
+                })
+                .toList();
 
-        // Persist to database
-        orderRepository.saveAll(request.getOrders());
-        vehicleRepository.saveAll(request.getVehicles());
+        // ✅ Map VehicleDto → VehicleEntity
+        List<VehicleEntity> vehicleEntities = request.getVehicles().stream()
+                .map(dto -> {
+                    VehicleEntity v = new VehicleEntity();
+                    v.setCapacity(dto.getCapacity());
+                    v.setShiftStart(dto.getShiftStart());
+                    v.setShiftEnd(dto.getShiftEnd());
+                    return v;
+                })
+                .toList();
 
-        // Run solver (stubbed for now)
-        List<RouteSolution> solutions = optimizationService.optimizeEntities(request.getOrders(), request.getVehicles());
-
-        // Save solutions into DB
-        for (RouteSolution sol : solutions) {
-            RouteEntity route = new RouteEntity();
-            route.setVehicleId(sol.getVehicleId());
-            route.setDistance(sol.getDistance());
-            route.setDuration(sol.getDuration());
-            route = routeRepository.save(route);
-
-            int seq = 1;
-            for (Long orderId : sol.getStops()) {
-                RouteStopEntity stop = new RouteStopEntity();
-                stop.setRoute(route);
-                stop.setOrder(orderRepository.findById(orderId).orElseThrow());
-                stop.setStopSequence(seq++);
-                routeStopRepository.save(stop);
-            }
-        }
-
-        return solutions;
+        // ✅ Call service with mapped entities + depot
+        return optimizationService.optimizeEntities(
+                orderEntities,
+                vehicleEntities,
+                request.getDepot()
+        );
     }
 }
