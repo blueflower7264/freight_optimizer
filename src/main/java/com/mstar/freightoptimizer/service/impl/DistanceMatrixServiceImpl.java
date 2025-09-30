@@ -32,6 +32,8 @@ public class DistanceMatrixServiceImpl implements DistanceMatrixService {
             coords.append(lon).append(",").append(lan); // lon,lat
         }
 
+        // Table (distance matrix): http://localhost:5000/table/v1/driving/{lon,lat};{lon,lat};...
+        // Route (detailed path): http://localhost:5000/route/v1/driving/{lon,lat};{lon,lat}
         String url = "http://localhost:5000/table/v1/driving/" + coords;
         try {
             String response = restTemplate.getForObject(url, String.class);
